@@ -210,3 +210,48 @@ Code licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICE
 
 # Contributing
 We welcome contributions to the project! Please check out our [Contribution guidelines](/docs/CONTRIBUTING.md) for details.
+
+# GW update instructions
+
+This repo has been forked from MobilityData/gtfs-validator.
+
+To Build and Publish the container image to ACR, follow these steps:
+
+1. Make any changes to the codesbase you want to make
+
+2. Build the image
+
+```
+docker build -t gtfs-validator .
+```
+
+3. Use the script `push-image-to-acr.sh` with the name of your container:
+
+```bash
+./push-image-to-acr.sh gtfs-validator
+```
+
+The script uses defaults of pushing to the ACR `dataplatform1commcrfabricaz2` and tagging the image as `latest`.
+
+The `latest` tag is used by the live operational change process. For testing you will likely want to tag the image with something such as dev, and point the fabric process to use the dev tag.
+
+To upgrade to a new version follow these steps:
+
+1. Go to github, into the forked repo and click 'Sync Fork'
+2. Checkout the tag of the version you want to upgrade to, e.g.
+   ```
+   git checkout v7.2.0
+   ```
+
+3. create a new branch for the upgrade, e.g.
+   ``` 
+   git switch -c gw-v7.2.0
+    ```
+4. Make the necessary changes to the codebase to accommodate the new version.
+
+There is currently only one change:
+
+- Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows. You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
+
+5. Commit and push your changes to your forked repo.
+6. Follow the instructions above for building and publishing the image to ACR.
