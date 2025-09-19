@@ -213,9 +213,13 @@ We welcome contributions to the project! Please check out our [Contribution guid
 
 # GW update instructions
 
+
+
 This repo has been forked from MobilityData/gtfs-validator.
 
 To Build and Publish the container image to ACR, follow these steps:
+
+Requires: Docker Desktop, Azure CLI, access to the ACR `dataplatform1commcrfabricaz2`.
 
 1. Make any changes to the codesbase you want to make
 
