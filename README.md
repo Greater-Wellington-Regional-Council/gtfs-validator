@@ -213,15 +213,17 @@ We welcome contributions to the project! Please check out our [Contribution guid
 
 # GW update instructions
 
-
-
 This repo has been forked from MobilityData/gtfs-validator.
 
 To Build and Publish the container image to ACR, follow these steps:
 
 Requires: Docker Desktop, Azure CLI, access to the ACR `dataplatform1commcrfabricaz2`.
 
-1. Make any changes to the codesbase you want to make
+1. Clone this repo to your local machine
+
+```git clone
+git clone https://github.com/Greater-Wellington-Regional-Council/gtfs-validator.git
+```
 
 2. Build the image
 
@@ -235,9 +237,12 @@ docker build -t gtfs-validator .
 ./push-image-to-acr.sh gtfs-validator
 ```
 
-The script uses defaults of pushing to the ACR `dataplatform1commcrfabricaz2` and tagging the image as `latest`.
+TODO: update the script to push to the `nonprod` tag by default, and to push to `latest` when a `--prod` flag is passed.
+TODO: update the dev, tst and uat fabric notebooks to use the `nonprod` tag.
 
-The `latest` tag is used by the live operational change process. For testing you will likely want to tag the image with something such as dev, and point the fabric process to use the dev tag.
+The script uses defaults of pushing to the ACR `dataplatform1commcrfabricaz2` and tagging the image as `nonprod`.
+
+The `latest` tag is used by the live operational change process. For testing use the `nonprod` tag. The `nonprod` tag is referenced in the dev, tst and uat fabric notebooks.
 
 To upgrade to a new version follow these steps:
 
@@ -251,11 +256,34 @@ To upgrade to a new version follow these steps:
    ``` 
    git switch -c gw-v7.2.0
     ```
-4. Make the necessary changes to the codebase to accommodate the new version.
-
-There is currently only one change:
-
-- Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows. You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
+4. Make our custom changes (specified below) to the codebase.
 
 5. Commit and push your changes to your forked repo.
 6. Follow the instructions above for building and publishing the image to ACR.
+
+## Our Custom Changes
+
+There is currently two changes and how to apply them:
+
+a. Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows. You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
+
+b. TODO: add the second change here.
+
+# Testing
+
+## Rules
+
+1. After running gtfs file, the container should output an html file to the expected lakehouse file location.
+2. The file size should be approximately the same size as previous runs with the same gtfs file.
+
+TODO: write down the process steps to carry out these tests, using the for /lakehouse/default/Files/GTFS_Data_File/PTF-001132#R4K item.
+
+# Pass to business user to run gtfs validation in the uat environment, confirm the output is as expected.
+
+# Deploy to production through change management process.
+
+1. Publish the containger image to ACR with the `latest` tag.
+2. After production deployment, confirm the output is as expected by business.
+
+#TODO: add docs for shell script operation.
+
