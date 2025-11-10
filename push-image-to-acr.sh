@@ -25,7 +25,13 @@ else
 fi
 
 [[ -z "$TARGET_REPO" ]] && TARGET_REPO="$IMAGE_NAME"
-REGISTRY_REF="$ACR_NAME.azurecr.io/$TARGET_REPO:latest"
+# REGISTRY_REF="$ACR_NAME.azurecr.io/$TARGET_REPO:latest"
+if [ $IMAGE_TAG == "prod" ]
+then 
+    REGISTRY_REF="$ACR_NAME.azurecr.io/$TARGET_REPO:latest"
+else
+    REGISTRY_REF="$ACR_NAME.azurecr.io/$TARGET_REPO:nonprod"
+fi 
 
 # Checks
 command -v az >/dev/null 2>&1 || { echo "Azure CLI not found" >&2; exit 1; }
