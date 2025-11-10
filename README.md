@@ -297,7 +297,7 @@ There are currently two changes and there are details below how to apply each:
 
 a. Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows. You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
 
-b. TODO: add the second change here.
+b. Open the main\src\main\java\org\mobilitydata\gtfsvalidator\util\shape\StopToShapeMatcherSettings.java file, and change the value for 'public static final double DEFAULT_MAX_DISTANCE_FROM_STOP_TO_SHAPE_IN_METERS' from 1500.0 to 1100.0.
 
 # Testing
 
