@@ -312,22 +312,26 @@ TODO: write down the process steps to carry out these tests, using the for /lake
 
 # Deploy to production through change management process.
 
-1. Publish the container image to ACR with the `latest` tag.
+1. Publish the container image to ACR with the `latest` tag (See shell script operation notes below).
 2. After production deployment, confirm the output is as expected by business.
 
 # Shell script operation
 
-From you own laptop, start a BASH shell (within LINUX/WSL) and start the script 'push-image-to-acr.sh' with one or two parameters
+From your laptop, start a BASH shell (within LINUX/WSL) and start the script 'push-image-to-acr.sh' with two parameters
 
 First parameter - is the name of the local image (optionally with a suffix of ':tag').
 Example: gtfs-validator:7.2.0
 
-Second parameter - is the name of the traget repository, within the Azure container registry. This should be 'gtfs-validator'
-
-Example:
-
-> push-image-to-acr.sh gtfs-validator:7.2.0 gtfs-validator
+Second parameter - is the name of the target repository, within the Azure container registry. This should be 'gtfs-validator'
 
 ## Notes
 
 1. The image tag value of 'prod' will result in the uploaded image tag of 'latest'. All other tags will upload an image with the tag 'nonprod'
+
+Examples:
+
+> push-image-to-acr.sh gtfs-validator:7.2.0 gtfs-validator
+> .. will upload the '7.2.0' tagged image as gtfs-validator tag 'nonprod'
+
+> push-image-to-acr.sh gtfs-validator:prod gtfs-validator
+> .. will upload the 'prod' tagged image as gtfs-validator tax 'latest'
