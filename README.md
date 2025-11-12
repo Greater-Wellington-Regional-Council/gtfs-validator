@@ -295,18 +295,31 @@ To upgrade to a new version follow these steps:
 
 There are currently two changes and there are details below how to apply each:
 
-a. Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows. You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
+a. Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows.
 
-b. Open the main\src\main\java\org\mobilitydata\gtfsvalidator\util\shape\StopToShapeMatcherSettings.java file, and change the value for 'public static final double DEFAULT_MAX_DISTANCE_FROM_STOP_TO_SHAPE_IN_METERS' from 1500.0 to 1100.0.
+b. Open the main\src\main\java\org\mobilitydata\gtfsvalidator\util\shape\StopToShapeMatcherSettings.java file, and change the value for 'public static final double DEFAULT_MAX_DISTANCE_FROM_STOP_TO_SHAPE_IN_METERS' from 100.0 to 1100.0.
+
+You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
 
 # Testing
+
+Prior to starting, ensure that you have access to the He Hapori folders used by the business to place their schedule files.
+
+To test a new version of the gtfs-validator, the process is basically:
+
+- download the latest software
+- apply our internal patches (take care - the line numbers may have changed)
+- run that patched version against the same input file as the previous version (this will be be 'zip' file produced by the business)
+- compare the outputs (that the exist, and that the filesize is approximately the same)
 
 ## Rules
 
 1. After running gtfs file, the container should output an html file to the expected lakehouse file location.
 2. The file size should be approximately the same size as previous runs with the same gtfs file.
 
-TODO: write down the process steps to carry out these tests, using the for /lakehouse/default/Files/GTFS_Data_File/PTF-001132#R4K item.
+For a manual check - for now
+a. Check that there is an html file in the lakehouse folder, main/src/main/resources
+b. Check that the size of this html file is approximately the same size as that produced by the previous run
 
 # Pass to business user to run gtfs validation in the uat environment, confirm the output is as expected.
 
