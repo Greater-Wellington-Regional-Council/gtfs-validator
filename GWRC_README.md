@@ -1,105 +1,108 @@
-# GW update instructions
+# Greater Wellington GTFS Standard Validaton Container Update Guide
 
-This repo has been forked from MobilityData/gtfs-validator.
+## Overview
 
-To Build and Publish the container image to ACR, follow these steps:
+This repository is a fork of [MobilityData/gtfs-validator](https://github.com/MobilityData/gtfs-validator), maintained by Greater Wellington Regional Council. The fork includes custom modifications to accommodate GW's validation requirements.
 
-Requires: Docker Desktop, Azure CLI, access to the ACR `dataplatform1commcrfabricaz2`.
+**Why forked:** The upstream validator imposes limits (50-row HTML reports, 100m stop-to-shape distance tolerance) that are too restrictive for GW's use case. Our fork increases these limits so a user can see more warnings in the report and so a looser spatial tolerance is applied.
 
-1. Clone this repo to your local machine
+## The Operational Change Process
 
-```git clone
-git clone https://github.com/Greater-Wellington-Regional-Council/gtfs-validator.git
-```
+This container is used for running standard validation process over GTFS files, where warnings are preseneted in the form of an html report in the He Hapori interface.
 
-2. Build the image
+A container with the `latest` tag is used by the live operational change process. For testing the `nonprod` tag is used. The `nonprod` tag is referenced in the dev, tst and uat fabric notebooks.
 
-```
-docker build -t gtfs-validator .
-```
+**What this document covers:** 
 
-3. Use the script `push-image-to-acr.sh` with the name of your container:
+This guide walks through the complete update process for the container:
 
-```bash
-./push-image-to-acr.sh gtfs-validator
-```
+ - Syncing upstream updates
+ - Applying GW-specific patches
+ - Building Docker image
+ - Deploying to Azure container registry for testing
+ - Deploying to Azure Container Registry for use in production
 
-The script uses defaults of pushing to the ACR `dataplatform1commcrfabricaz2` and tagging the image as `nonprod`.
+## Syncing Upstream Updates
 
-The `latest` tag is used by the live operational change process. For testing use the `nonprod` tag. The `nonprod` tag is referenced in the dev, tst and uat fabric notebooks.
-
-To upgrade to a new version follow these steps:
-
-1. Go to github, into the forked repo and click 'Sync Fork'
-2. Checkout the tag of the version you want to upgrade to, e.g.
-
-   ```
+1. Navigate to the forked repository on GitHub
+2. Click **Sync Fork** to pull the latest changes from MobilityData/gtfs-validator
+3. Checkout the specific version tag you want to upgrade to:
+   ```bash
    git checkout v7.2.0
    ```
-
-3. create a new branch for the upgrade, e.g.
-   ```
+4. Create a new branch for the GW-specific version:
+   ```bash
    git switch -c gw-v7.2.0
    ```
-4. Make our custom changes (specified below) to the codebase.
 
-5. Commit and push your changes to your forked repo.
-6. Follow the instructions above for building and publishing the image to ACR.
+## Applying GW-specific patches
 
-## Our Custom Changes
+After syncing, apply GW's custom patches. 
 
-There are currently two changes and there are details below how to apply each:
+**Patch 1: Increase HTML report row limit**
+- File: `main/src/main/resources/report.html`
+- Change: Replace 50-row limit with 15000 rows
 
-a. Open the main/src/main/resources/report.html file and change the places imposing a 50 row limit in the html report to 15000 rows.
+**Patch 2: Increase stop-to-shape distance tolerance**
+- File: `main/src/main/java/org/mobilitydata/gtfsvalidator/util/shape/StopToShapeMatcherSettings.java`
+- Change: Update `DEFAULT_MAX_DISTANCE_FROM_STOP_TO_SHAPE_IN_METERS` from `100.0` to `1100.0`
 
-b. Open the main\src\main\java\org\mobilitydata\gtfsvalidator\util\shape\StopToShapeMatcherSettings.java file, and change the value for 'public static final double DEFAULT_MAX_DISTANCE_FROM_STOP_TO_SHAPE_IN_METERS' from 100.0 to 1100.0.
+N.B. You can reference previous branches (e.g., `gw-v7.1.0`) to locate where changes are needed.
 
-You can check the previous branch (e.g. gw-v7.1.0) for where these changes need to occur.
+Commit and push changes to your forked repository.
 
-# Testing
+## Building the Container Image
 
-Prior to starting, ensure that you have access to the He Hapori folders used by the business to place their schedule files.
+**Prerequisites:** Docker Desktop, Azure CLI, access to ACR `dataplatform1commcrfabricaz2`
 
-To test a new version of the gtfs-validator, the process is basically:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Greater-Wellington-Regional-Council/gtfs-validator.git
+   ```
 
-- download the latest software
-- apply our internal patches (take care - the line numbers may have changed)
-- run that patched version against the same input file as the previous version (this will be be 'zip' file produced by the business)
-- compare the outputs (that the exist, and that the filesize is approximately the same)
+2. Build the Docker image locally:
+   ```bash
+   docker build -t gtfs-validator .
+   ```
 
-## Rules
+3. Verify the image was created:
+   ```bash
+   docker image ls gtfs-validator
+   ```
 
-1. After running gtfs file, the container should output an html file to the expected lakehouse file location.
-2. The file size should be approximately the same size as previous runs with the same gtfs file.
-
-For a manual check - for now
-a. Check that there is an html file in the lakehouse folder, main/src/main/resources
-b. Check that the size of this html file is approximately the same size as that produced by the previous run
-
-# Pass to business user to run gtfs validation in the uat environment, confirm the output is as expected.
-
-# Deploy to production through change management process.
-
-1. Publish the container image to ACR with the `latest` tag (See shell script operation notes below).
-2. After production deployment, confirm the output is as expected by business.
-
-# Shell script operation
+## Deployment to Azure Container Registry for testing
 
 From your laptop, start a BASH shell (within LINUX/WSL) and start the script 'push-image-to-acr.sh' with two parameters
 
 First parameter - is the name of the local image (optionally with a suffix of ':tag').
 Example: gtfs-validator:7.2.0
 
-Second parameter - is the name of the target repository, within the Azure container registry. This should be 'gtfs-validator'
+Second parameter - is the name of the target repository, within the Azure container registry. This should be 'gtfs-validator'. The script will push with the `nonprod` tag by default.
 
-## Notes
+e.g. Push the image with the `nonprod` tag for testing in dev/tst/uat environments:
 
-1. The image tag value of 'prod' will result in the uploaded image tag of 'latest'. All other tags will upload an image with the tag 'nonprod'
+```bash
+./push-image-to-acr.sh gtfs-validator:7.2.0 gtfs-validator
+```
 
-Examples:
+This uploads to `dataplatform1commcrfabricaz2.azurecr.io/gtfs-validator:nonprod`.
 
-> push-image-to-acr.sh gtfs-validator:7.2.0 gtfs-validator
-> .. will upload the '7.2.0' tagged image as gtfs-validator tag 'nonprod'
+**Testing procedure:**
 
-> push-image-to-acr.sh gtfs-validator:prod gtfs-validator
-> .. will upload the 'prod' tagged image as gtfs-validator tax 'latest'
+Pass to a metlink business user for UAT validation in the uat environment. They should:
+
+   - Run the Operational Change standard validation process in UAT
+   - Verify that an HTML report is generated with expected warnings
+
+## Production Deployment to Azure Container Registry
+
+After successful UAT validation, deploy to production via the change management process:
+
+1. Tag and push the image as `prod` to create the `latest` tag in ACR:
+   ```bash
+   docker tag gtfs-validator:7.2.0 gtfs-validator:prod
+   ./push-image-to-acr.sh gtfs-validator:prod gtfs-validator
+   ```
+   This uploads to `dataplatform1commcrfabricaz2.azurecr.io/gtfs-validator:latest`.
+
+2. After deployment, communicate to stakeholders that the new version is live in production.
