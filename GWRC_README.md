@@ -26,13 +26,19 @@ This guide walks through the complete update process for the container:
 
 1. Navigate to the forked repository on GitHub
 2. Click **Sync Fork** to pull the latest changes from MobilityData/gtfs-validator
-3. Checkout the specific version tag you want to upgrade to:
+3. Pull the synced changes to your local master branch:
+   ```bash
+   git checkout master
+   git pull origin master
+   ```
+4. Checkout the specific version tag you want to upgrade to:
    ```bash
    git checkout v7.2.0
    ```
-4. Create a new branch for the GW-specific version:
+5. Create a new branch for the GW-specific version (this will include GWRC_README.md and push-image-to-acr.sh from master):
    ```bash
    git switch -c gw-v7.2.0
+   git checkout master -- GWRC_README.md push-image-to-acr.sh
    ```
 
 ## Applying GW-specific patches
